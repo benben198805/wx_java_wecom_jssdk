@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.js"
+            integrity="sha256-H+K7U5CnXl1h5ywQfKtSj8PCmoN9aaq30gDh27Xc0jk=" crossorigin="anonymous"></script>
+    <script src="https://res.wx.qq.com/open/js/jweixin-1.6.0.js"></script>
+    <script src="https://open.work.weixin.qq.com/wwopen/js/jwxwork-1.0.0.js"></script>
+</head>
+<body>
+
+</body>
+
+<script>
+    $(document).ready(() => {
+        const link = location.href;
+        const agentId = 1000002;
+        console.log(link)
+        $.ajax({
+            url: "/wx/cp/auth/" + agentId,//后台给你提供的接口
+            type: "post",
+            data: '{"url":"' + link + '"}',
+            async: false,
+            contentType: "application/json; charset=utf-8",
+            dataType: "json",
+            success: function (data) {
+                console.log(data)
+                console.log("==========")
+                console.log(wx);
+                console.log("==========")
+
+                wx.config({
+                    debug: true, // 开启调试模式,调用的所有api的返回值会在客户端alert出来
+                    appId: data.appid, // 必填，公众号的唯一标识
+                    timestamp: data.timestamp, // 必填，生成签名的时间戳
+                    nonceStr: data.noncestr, // 必填，生成签名的随机串
+                    signature: data.signature,// 必填，签名，见附录1
+                    jsApiList: [
+                        "agentConfig",
+                        "shareToExternalContact",
+                    ]
+                });
+
+                wx.error((res) => {
+                    console.log("error", res);
+                });
+
+                wx.ready((res) => {
+                    console.log(res)
+                    console.log("=====ready done=====")
+
+                    wx.agentConfig({
+                        debug: true,
+                        corpid: data.appid, // 必填，公众号的唯一标识
+                        agentid: agentId, // 必填，公众号的唯一标识
+                        timestamp: data.timestamp, // 必填，生成签名的时间戳
+                        nonceStr: data.noncestr, // 必填，生成签名的随机串
+                        signature: data.agentSignature,// 必填，签名，见附录1
+                        jsApiList: [
+                            "agentConfig",
+                            "shareToExternalContact",
+                        ],
+                        success: (res) => {
+                            console.log("agentConfig success: ", res);
+
+                            wx.invoke("shareToExternalContact", {
+                                    text: {
+                                        content: "hello world 111",    // 文本内容
+                                    }
+                                }, function (res) {
+                                    console.log("==========")
+                                    console.log(res);
+                                }
+                            );
+
+                            console.log(22222)
+                        },
+                        fail: (error) => {
+                            console.log("agentConfig error: ", error)
+                        }
+                    });
+
+                    wx.checkJsApi({
+                        jsApiList: ['agentConfig', 'shareToExternalContact'], // 需要检测的JS接口列表
+                        success: function (res) {
+                            console.log("==========")
+                            console.log(res)
+                        }
+                    });
+                }, (res) => {
+                    console.log(res)
+                });
+
+
+            },
+            error: function (error) {
+                console.log(error)
+            }
+        });
+    });
+</script>
+</html>
